@@ -24,9 +24,9 @@ export abstract class TblConverter {
 			output += "<tr>"
 			for (let value of row) {
 				if (value == null) {
-					output += "<td class='null'>&lt;Null&gt;</td>"
+					output += "<td class='null'>Null</td>"
 				} else if (value == "") {
-					output += "<td class='empty'>&lt;Empty&gt;</td>"
+					output += "<td class='empty'>Empty</td>"
 				} else {
 					output += "<td>"+TblConverter.valueToHtml(value)+"</td>"
 				}

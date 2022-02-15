@@ -78,43 +78,43 @@ export class TblDocument {
 		return this.rows.map(x => [...x])
 	}
 
-	toSmlDocument(aligned: boolean = false): SmlDocument {
-		let smlRootElement: SmlElement = new SmlElement("Table")
+	toElement(aligned: boolean = false): SmlElement {
+		let element: SmlElement = new SmlElement("Table")
 		if (this.meta.hasAny) {
 			let metaElement: SmlElement = this.meta.toSmlElement()
 			metaElement.alignAttributes("  ")
-			smlRootElement.addNode(metaElement)
+			element.addNode(metaElement)
 		}
-		smlRootElement.addAttribute(this.columnNames[0], this.columnNames.slice(1))
+		element.addAttribute(this.columnNames[0], this.columnNames.slice(1))
 		for (let row of this.rows) {
-			smlRootElement.addAttribute(row[0]!, row.slice(1))
+			element.addAttribute(row[0]!, row.slice(1))
 		}
-		smlRootElement.alignAttributes("  ")
-		let smlDocument: SmlDocument = new SmlDocument(smlRootElement)
-		return smlDocument
+		if (aligned) { element.alignAttributes("  ") }
+		return element
 	}
 
 	toString(): string {
-		let smlDocument: SmlDocument = this.toSmlDocument()
+		let rootElement: SmlElement = this.toElement()
+		let smlDocument: SmlDocument = new SmlDocument(rootElement)
 		return smlDocument.toString()
 	}
 
 	toAlignedString(): string {
-		let smlDocument: SmlDocument = this.toSmlDocument(true)
+		let rootElement: SmlElement = this.toElement(true)
+		let smlDocument: SmlDocument = new SmlDocument(rootElement)
 		return smlDocument.toString()
 	}
 
 	toMinifiedString(): string {
-		let smlDocument: SmlDocument = this.toSmlDocument()
+		let rootElement: SmlElement = this.toElement()
+		let smlDocument: SmlDocument = new SmlDocument(rootElement)
 		return smlDocument.toMinifiedString()
 	}
 
-	static parse(content: string): TblDocument {
-		let smlDocument: SmlDocument = SmlDocument.parse(content, false)
-		let rootElement: SmlElement = smlDocument.root
-		if (!rootElement.hasName("Table")) { throw new Error("Not a valid table document") }
+	static parseElement(element: SmlElement): TblDocument {
+		if (!element.hasName("Table")) { throw new Error("Not a valid table document") }
 		
-		let attributes: SmlAttribute[] = rootElement.attributes()
+		let attributes: SmlAttribute[] = element.attributes()
 		if (attributes.length === 0) { throw new Error("No column names") }
 		let columnNamesAttribute: SmlAttribute = attributes[0]
 		for (let value of columnNamesAttribute.values) {
@@ -123,18 +123,68 @@ export class TblDocument {
 		let columnNames: string[] = [columnNamesAttribute.name, ...(columnNamesAttribute.values as string[])]
 		let document: TblDocument = new TblDocument(columnNames)
 		
-		if (rootElement.hasElement("Meta")) {
-			if (rootElement.elements().length > 1) { throw new Error("Only one meta element is allowed")}
-			if (!rootElement.namedNodes()[0].isElement()) { throw new Error("Meta element must be first node")}
-			document.meta.parse(rootElement.element("Meta"))
+		if (element.hasElement("Meta")) {
+			if (element.elements().length > 1) { throw new Error("Only one meta element is allowed") }
+			if (!element.namedNodes()[0].isElement()) { throw new Error("Meta element must be first node") }
+			document.meta.parse(element.element("Meta"))
 		} else {
-			if (rootElement.hasElements()) { throw new Error("Only meta element is allowed")}
+			if (element.hasElements()) { throw new Error("Only meta element is allowed") }
 		}
 
 		for (let i=1; i<attributes.length; i++) {
 			let rowAttribute: SmlAttribute = attributes[i]
 			let rowValues: (string | null)[] = [rowAttribute.name, ...rowAttribute.values]
 			document.addRow(rowValues)
+		}
+		return document
+	}
+
+	static parse(content: string): TblDocument {
+		let smlDocument: SmlDocument = SmlDocument.parse(content, false)
+		return TblDocument.parseElement(smlDocument.root)
+	}
+}
+
+// ----------------------------------------------------------------------
+
+export class TblsDocument {
+	encoding: ReliableTxtEncoding = ReliableTxtEncoding.Utf8
+	tables: TblDocument[] = []
+
+	toElement(aligned: boolean = false): SmlElement {
+		let element: SmlElement = new SmlElement("Tables")
+		for (let table of this.tables) {
+			element.addNode(table.toElement(aligned))
+		}
+		return element
+	}
+
+	toString(): string {
+		let rootElement: SmlElement = this.toElement()
+		let smlDocument: SmlDocument = new SmlDocument(rootElement)
+		return smlDocument.toString()
+	}
+
+	toAlignedString(): string {
+		let rootElement: SmlElement = this.toElement(true)
+		let smlDocument: SmlDocument = new SmlDocument(rootElement)
+		return smlDocument.toString()
+	}
+
+	toMinifiedString(): string {
+		let rootElement: SmlElement = this.toElement()
+		let smlDocument: SmlDocument = new SmlDocument(rootElement)
+		return smlDocument.toMinifiedString()
+	}
+
+	static parse(content: string): TblsDocument {
+		let document: TblsDocument = new TblsDocument()
+		let smlDocument: SmlDocument = SmlDocument.parse(content, false)
+		let rootElement: SmlElement = smlDocument.root
+		if (!rootElement.hasName("Tables")) { throw new Error("Not a valid tables document") }
+		for (let tableElement of rootElement.elements("Table")) {
+			let tableDocument: TblDocument = TblDocument.parseElement(tableElement)
+			document.tables.push(tableDocument)
 		}
 		return document
 	}
