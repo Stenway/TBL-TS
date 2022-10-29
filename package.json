@@ -1,0 +1,38 @@
+{
+  "name": "@stenway/tbl",
+  "version": "0.0.1",
+  "description": "Stefan John / Stenway / SimpleML.com / 2022",
+  "homepage": "https://www.simpleml.com",
+  "repository": "github:Stenway/TBL-TS",
+  "bugs": {
+    "url": "https://github.com/Stenway/TBL-TS/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [
+    "table",
+    "csv",
+    "tsv",
+    "wsv",
+    "sml",
+    "meta data",
+    "data format",
+    "data",
+    "file format"
+  ],
+  "author": "Stefan John",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "@stenway/reliabletxt": "^0.0.2",
+    "@stenway/sml": "^0.0.2"
+  }
+}

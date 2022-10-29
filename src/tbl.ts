@@ -1,7 +1,7 @@
 ﻿/* (C) Stefan John / Stenway / SimpleML.com / 2022 */
 
-import { ReliableTxtEncoding } from "./reliabletxt.js"
-import { SmlAttribute, SmlDocument, SmlElement } from "./sml.js"
+import { ReliableTxtEncoding } from "@stenway/reliabletxt"
+import { SmlAttribute, SmlDocument, SmlElement } from "@stenway/sml"
 
 // ----------------------------------------------------------------------
 
