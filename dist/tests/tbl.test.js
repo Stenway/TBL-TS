@@ -1,0 +1,269 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const reliabletxt_1 = require("@stenway/reliabletxt");
+const sml_1 = require("@stenway/sml");
+const src_1 = require("../src");
+test("TblCustomProperties.set", () => {
+    const properties = new src_1.TblCustomProperties();
+    properties.set("Key", "Value1");
+    expect(properties.entries).toEqual([["Key", "Value1"]]);
+    properties.set("KEY", "Value2");
+    expect(properties.entries).toEqual([["Key", "Value2"]]);
+});
+test("TblCustomProperties.setRange", () => {
+    const properties = new src_1.TblCustomProperties();
+    properties.setRange([["Key1", "Value1"], ["Key2", "Value2"]]);
+    expect(properties.entries).toEqual([["Key1", "Value1"], ["Key2", "Value2"]]);
+});
+test("TblCustomProperties.unset", () => {
+    const properties = new src_1.TblCustomProperties();
+    properties.set("Key", "Value1");
+    expect(properties.entries).toEqual([["Key", "Value1"]]);
+    properties.unset("KEY");
+    expect(properties.entries).toEqual([]);
+    properties.unset("Key");
+});
+test("TblCustomProperties.clear", () => {
+    const properties = new src_1.TblCustomProperties();
+    properties.setRange([["Key1", "Value1"], ["Key2", "Value2"]]);
+    properties.clear();
+    expect(properties.entries).toEqual([]);
+});
+test("TblCustomProperties.keys", () => {
+    const properties = new src_1.TblCustomProperties();
+    properties.setRange([["Key1", "Value1"], ["Key2", "Value2"]]);
+    expect(properties.keys).toEqual(["Key1", "Key2"]);
+});
+test("TblCustomProperties.get + getOrNull + getOrDefault", () => {
+    const properties = new src_1.TblCustomProperties();
+    properties.set("Key", "Value1");
+    expect(properties.get("Key")).toEqual("Value1");
+    expect(() => properties.get("Key2")).toThrowError();
+    expect(properties.getOrNull("Key")).toEqual("Value1");
+    expect(properties.getOrNull("Key2")).toEqual(null);
+    expect(properties.getOrDefault("Key", "X")).toEqual("Value1");
+    expect(properties.getOrDefault("Key2", "X")).toEqual("X");
+});
+// ----------------------------------------------------------------------
+describe("TblMetaData.parse + toSmlElement", () => {
+    test.each([
+        [`Meta\n\tTitle text\n\tDescription text\nEnd`],
+        [`Meta\n\tCustomData text\nEnd`],
+        [`Meta\n\tCustomData application/xyz text\nEnd`],
+        [`Meta\n\tCustomData\n\t\tMyAttribute 123\n\tEnd\nEnd`],
+        [`Meta\n\tLanguage EN\nEnd`],
+        [`Meta\n\tKeywords Keyword1 Keyword2\nEnd`],
+        [`Meta\n\tCustomProperties\n\t\tKey Value\n\tEnd\nEnd`],
+        [`Meta\n\tColumn\n\t\tDescription Text\n\tEnd\nEnd`],
+        [`Meta\n\tColumn\n\t\tTitle Text\n\tEnd\nEnd`],
+        [`Meta\n\tColumn\n\t\tCustomData Text\n\tEnd\nEnd`],
+    ])("Given %p", (input) => {
+        const meta = new src_1.TblMetaData(new src_1.TblDocument(["C1", "C2"]));
+        meta.parse(sml_1.SmlElement.parse(input));
+        expect(meta.toElement().toString()).toEqual(input);
+    });
+    test.each([
+        [`Meta\n\tCustomData text\n\tCustomData text\nEnd`],
+        [`Meta\n\tCustomData text\n\tCustomData\n\t\tMyAttribute 123\n\tEnd\nEnd`],
+        [`Meta\n\tCustomData\n\t\tMyAttribute 123\n\tEnd\n\tCustomData text\nEnd`],
+        [`Meta\n\tColumn\n\tEnd\n\tColumn\n\tEnd\n\tColumn\n\tEnd\nEnd`],
+    ])("Given %p throws", (input) => {
+        const meta = new src_1.TblMetaData(new src_1.TblDocument(["C1", "C2"]));
+        expect(() => meta.parse(sml_1.SmlElement.parse(input))).toThrowError();
+    });
+});
+describe("TblMetaData.keywords", () => {
+    test("Modify", () => {
+        const meta = new src_1.TblMetaData(new src_1.TblDocument(["C1", "C2"]));
+        const keywords = ["Keyword1"];
+        meta.keywords = keywords;
+        keywords.pop();
+        expect(meta.keywords).toEqual(["Keyword1"]);
+        const returnedKeywords = meta.keywords;
+        returnedKeywords.pop();
+        expect(meta.keywords).toEqual(["Keyword1"]);
+        meta.keywords = null;
+        expect(meta.keywords).toEqual(null);
+    });
+    test("Throws", () => {
+        const meta = new src_1.TblMetaData(new src_1.TblDocument(["C1", "C2"]));
+        expect(() => meta.keywords = []).toThrowError();
+    });
+});
+test("TblMetaData.columns", () => {
+    const meta = new src_1.TblMetaData(new src_1.TblDocument(["C1", "C2"]));
+    meta.addColumnMetaData();
+    meta.addColumnMetaData();
+    const columns = meta.columns;
+    columns.pop();
+    expect(meta.columns.length).toEqual(2);
+});
+// ----------------------------------------------------------------------
+describe("TblDocument.constructor", () => {
+    test.each([
+        [["Column1", "Column2"]],
+    ])("Given %p", (input) => {
+        const document = new src_1.TblDocument(input);
+        expect(document.encoding).toEqual(reliabletxt_1.ReliableTxtEncoding.Utf8);
+        expect(document.columnNames).toEqual(input);
+    });
+    test.each([
+        [[]],
+        [["Column1"]],
+    ])("Given %p throws", (input) => {
+        expect(() => new src_1.TblDocument(input)).toThrowError();
+    });
+});
+test("TblDocument.getColumnNames", () => {
+    const document = new src_1.TblDocument(["Column1", "Column2"]);
+    const columnNames = document.columnNames;
+    columnNames[0] = "Changed";
+    expect(document.columnNames).toEqual(["Column1", "Column2"]);
+    expect(document.columnCount).toEqual(2);
+});
+describe("TblDocument.addRow", () => {
+    test.each([
+        [["Value1", null]],
+    ])("Given %p", (input) => {
+        const document = new src_1.TblDocument(["Column1", "Column2"]);
+        const inputClone = [...input];
+        document.addRow(input);
+        input[0] = null;
+        expect(document.getRows()).toEqual([inputClone]);
+    });
+    test.each([
+        [[]],
+        [["Value1"]],
+        [[null, "Value2"]],
+        [["Value1", "Value2", "Value3", "Value4"]],
+    ])("Given %p throws", (input) => {
+        const document = new src_1.TblDocument(["Column1", "Column2", "Column3"]);
+        expect(() => document.addRow(input)).toThrowError();
+    });
+});
+test("TblDocument.getRows + getRow + getRowCount", () => {
+    const document = new src_1.TblDocument(["Column1", "Column2"]);
+    document.addRow(["Value11", "Value12"]);
+    document.addRow(["Value21", null]);
+    expect(document.getRows()).toEqual([["Value11", "Value12"], ["Value21", null]]);
+    expect(document.getRowCount()).toEqual(2);
+    expect(document.getRow(1)).toEqual(["Value21", null]);
+});
+test("TblDocument.toString + toAlignedString + toMinifiedString", () => {
+    const document = new src_1.TblDocument(["Column1", "Column2", "Column3"]);
+    document.addRow(["Long Value 11", "Value12"]);
+    document.addRow(["Value21", null]);
+    document.addRow(["Value31", "𝄞𝄞𝄞𝄞𝄞𝄞𝄞𝄞"]);
+    expect(document.toString()).toEqual(`Table\n\tColumn1 Column2 Column3\n\t"Long Value 11" Value12\n\tValue21 -\n\tValue31 𝄞𝄞𝄞𝄞𝄞𝄞𝄞𝄞\nEnd`);
+    expect(document.toString(true)).toEqual(`Table\n\tColumn1         Column2  Column3\n\t"Long Value 11" Value12\n\tValue21         -\n\tValue31         𝄞𝄞𝄞𝄞𝄞𝄞𝄞𝄞\nEnd`);
+    expect(document.toMinifiedString()).toEqual(`Table\nColumn1 Column2 Column3\n"Long Value 11" Value12\nValue21 -\nValue31 𝄞𝄞𝄞𝄞𝄞𝄞𝄞𝄞\n-`);
+    expect(document.toString(true, "  ")).toEqual(`Table\n\tColumn1          Column2   Column3\n\t"Long Value 11"  Value12\n\tValue21          -\n\tValue31          𝄞𝄞𝄞𝄞𝄞𝄞𝄞𝄞\nEnd`);
+    expect(document.toString(true, "  ", [false, true, true])).toEqual(`Table\n\tColumn1           Column2  Column3\n\t"Long Value 11"   Value12\n\tValue21                 -\n\tValue31          𝄞𝄞𝄞𝄞𝄞𝄞𝄞𝄞\nEnd`);
+    document.meta.title = "My Table";
+    expect(document.toString(true)).toEqual(`Table\n\tMeta\n\t\tTitle "My Table"\n\tEnd\n\tColumn1         Column2  Column3\n\t"Long Value 11" Value12\n\tValue21         -\n\tValue31         𝄞𝄞𝄞𝄞𝄞𝄞𝄞𝄞\nEnd`);
+    expect(document.toMinifiedString()).toEqual(`Table\nMeta\nTitle "My Table"\n-\nColumn1 Column2 Column3\n"Long Value 11" Value12\nValue21 -\nValue31 𝄞𝄞𝄞𝄞𝄞𝄞𝄞𝄞\n-`);
+});
+describe("TblDocument.parse", () => {
+    test.each([
+        [`Table\n\tColumn1 Column2\nEnd`],
+        [`Table\n\tColumn1 Column2\n\tValue11 Value12\nEnd`],
+        [`Table\n\tMeta\n\t\tDescription Text\n\tEnd\n\tColumn1 Column2\n\tValue11 Value12\nEnd`],
+    ])("Given %p", (input) => {
+        const document = src_1.TblDocument.parse(input);
+        expect(document.toString()).toEqual(input);
+    });
+    test.each([
+        [`Table\nEnd`],
+        [`Document\nEnd`],
+        [`Table\n\tColumn1 -\nEnd`],
+        [`Table\n\tColumn1 Column2\n\tElement\n\tEnd\nEnd`],
+        [`Table\n\tColumn1 Column2\n\tMeta\n\tEnd\nEnd`],
+        [`Table\n\tColumn1 Column2\n\tMeta\n\tEnd\n\tMeta\n\tEnd\nEnd`],
+    ])("Given %p throws", (input) => {
+        expect(() => src_1.TblDocument.parse(input)).toThrowError();
+    });
+});
+test("TblDocument.getBytes + fromBytes", () => {
+    const document = src_1.TblDocument.parse(`Table\n\tColumn1 Column2\n\tV11 V12\n\t"Long Value" -\nEnd`);
+    const bytes = document.getBytes();
+    const document2 = src_1.TblDocument.fromBytes(bytes);
+    expect(document.toString()).toEqual(document2.toString());
+});
+test("TblDocument.toBase64String + fromBase64String", () => {
+    const document = src_1.TblDocument.parse(`Table\n\tColumn1 Column2\n\tV11 V12\n\t"Long Value" -\nEnd`);
+    const base64Str = document.toBase64String();
+    const document2 = src_1.TblDocument.fromBase64String(base64Str);
+    expect(document.toString()).toEqual(document2.toString());
+});
+test("TblDocument.parseElement", () => {
+    const element = sml_1.SmlElement.parse(`Table\n\tColumn1 Column2\n\tV11 V12\n\t"Long Value" -\nEnd`);
+    const document = src_1.TblDocument.parseElement(element);
+    expect(document.toString()).toEqual(element.toString());
+});
+// ----------------------------------------------------------------------
+describe("TblsMetaData.parse + toSmlElement", () => {
+    test.each([
+        [`Meta\n\tTitle text\n\tDescription text\nEnd`],
+        [`Meta\n\tCustomData text\nEnd`],
+        [`Meta\n\tCustomData application/xyz text\nEnd`],
+        [`Meta\n\tCustomData\n\t\tMyAttribute 123\n\tEnd\nEnd`],
+    ])("Given %p", (input) => {
+        const meta = new src_1.TblsMetaData();
+        meta.parse(sml_1.SmlElement.parse(input));
+        expect(meta.toElement().toString()).toEqual(input);
+    });
+    test.each([
+        [`Meta\n\tCustomData text\n\tCustomData text\nEnd`],
+        [`Meta\n\tCustomData text\n\tCustomData\n\t\tMyAttribute 123\n\tEnd\nEnd`],
+        [`Meta\n\tCustomData\n\t\tMyAttribute 123\n\tEnd\n\tCustomData text\nEnd`],
+    ])("Given %p throws", (input) => {
+        const meta = new src_1.TblsMetaData();
+        expect(() => meta.parse(sml_1.SmlElement.parse(input))).toThrowError();
+    });
+});
+// ----------------------------------------------------------------------
+test("TblsDocument.constructor", () => {
+    const table1 = new src_1.TblDocument(["Column1", "Column2"]);
+    let document = new src_1.TblsDocument();
+    document.tables.push(table1);
+    expect(document.toString()).toEqual(`Tables\n\tTable\n\t\tColumn1 Column2\n\tEnd\nEnd`);
+    document = new src_1.TblsDocument(null);
+    document.tables.push(table1);
+    expect(document.toString()).toEqual(`Tables\n\tTable\n\t\tColumn1 Column2\n\tEnd\nEnd`);
+    document = new src_1.TblsDocument([table1]);
+    expect(document.toString()).toEqual(`Tables\n\tTable\n\t\tColumn1 Column2\n\tEnd\nEnd`);
+});
+describe("TblsDocument.parse", () => {
+    test.each([
+        [`Tables\n\tTable\n\t\tColumn1 Column2\n\tEnd\nEnd`],
+        [`Tables\n\tMeta\n\t\tDescription Text\n\tEnd\n\tTable\n\t\tColumn1 Column2\n\tEnd\nEnd`],
+    ])("Given %p", (input) => {
+        const document = src_1.TblsDocument.parse(input);
+        expect(document.toString()).toEqual(input);
+    });
+    test.each([
+        [`Document\nEnd`],
+        [`Tables\n\tTable\n\t\tColumn1 Column2\n\tEnd\n\tMeta\n\t\tDescription Text\n\tEnd\nEnd`],
+    ])("Given %p throws", (input) => {
+        expect(() => src_1.TblsDocument.parse(input)).toThrowError();
+    });
+});
+test("TblsDocument.toAlignedString + toMinifiedString", () => {
+    const document = src_1.TblsDocument.parse(`Tables\n\tMeta\n\t\tDescription Text\n\tEnd\n\tTable\n\t\tColumn1 Column2\n\t\tV11 V12\n\t\t"Long Value" -\n\tEnd\nEnd`);
+    expect(document.toString(true, "  ")).toEqual(`Tables\n\tMeta\n\t\tDescription Text\n\tEnd\n\tTable\n\t\tColumn1       Column2\n\t\tV11           V12\n\t\t"Long Value"  -\n\tEnd\nEnd`);
+    expect(document.toString(true)).toEqual(`Tables\n\tMeta\n\t\tDescription Text\n\tEnd\n\tTable\n\t\tColumn1      Column2\n\t\tV11          V12\n\t\t"Long Value" -\n\tEnd\nEnd`);
+    expect(document.toMinifiedString()).toEqual(`Tables\nMeta\nDescription Text\n-\nTable\nColumn1 Column2\nV11 V12\n"Long Value" -\n-\n-`);
+});
+test("TblsDocument.getBytes + fromBytes", () => {
+    const document = src_1.TblsDocument.parse(`Tables\n\tMeta\n\t\tDescription Text\n\tEnd\n\tTable\n\t\tColumn1 Column2\n\t\tV11 V12\n\t\t"Long Value" -\n\tEnd\nEnd`);
+    const bytes = document.getBytes();
+    const document2 = src_1.TblsDocument.fromBytes(bytes);
+    expect(document.toString()).toEqual(document2.toString());
+});
+test("TblsDocument.toBase64String + fromBase64String", () => {
+    const document = src_1.TblsDocument.parse(`Tables\n\tMeta\n\t\tDescription Text\n\tEnd\n\tTable\n\t\tColumn1 Column2\n\t\tV11 V12\n\t\t"Long Value" -\n\tEnd\nEnd`);
+    const base64Str = document.toBase64String();
+    const document2 = src_1.TblsDocument.fromBase64String(base64Str);
+    expect(document.toString()).toEqual(document2.toString());
+});
+//# sourceMappingURL=tbl.test.js.map
