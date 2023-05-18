@@ -1,17 +1,13 @@
-"use strict";
 /* (C) Stefan John / Stenway / SimpleML.com / 2023 */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TblsDocument = exports.TblsMetaData = exports.TblDocument = exports.TblMetaData = exports.TblColumnMetaData = exports.TblCustomProperties = exports.TblCustomMetaData = void 0;
-const reliabletxt_1 = require("@stenway/reliabletxt");
-const sml_1 = require("@stenway/sml");
+import { Base64String, ReliableTxtDecoder, ReliableTxtEncoder, ReliableTxtEncoding } from "@stenway/reliabletxt";
+import { SmlDocument, SmlElement } from "@stenway/sml";
 // ----------------------------------------------------------------------
-class TblCustomMetaData {
+export class TblCustomMetaData {
     constructor(mediaType, textContent) {
         this.mediaType = mediaType;
         this.textContent = textContent;
     }
 }
-exports.TblCustomMetaData = TblCustomMetaData;
 // ----------------------------------------------------------------------
 class TblMetaDataUtil {
     static getCustomData(element) {
@@ -36,7 +32,7 @@ class TblMetaDataUtil {
     }
     static serializeCustomData(customData, element) {
         if (customData !== null) {
-            if (customData instanceof sml_1.SmlElement) {
+            if (customData instanceof SmlElement) {
                 element.addNode(customData);
             }
             else {
@@ -51,9 +47,9 @@ class TblMetaDataUtil {
     }
 }
 // ----------------------------------------------------------------------
-class TblCustomProperties {
+export class TblCustomProperties {
     constructor() {
-        this._element = new sml_1.SmlElement("CustomProperties");
+        this._element = new SmlElement("CustomProperties");
     }
     get keys() {
         return this._element.attributes().map(x => x.name);
@@ -119,9 +115,8 @@ class TblCustomProperties {
         }
     }
 }
-exports.TblCustomProperties = TblCustomProperties;
 // ----------------------------------------------------------------------
-class TblColumnMetaData {
+export class TblColumnMetaData {
     constructor(index) {
         this.title = null;
         this.description = null;
@@ -129,7 +124,7 @@ class TblColumnMetaData {
         this.index = index;
     }
     toElement() {
-        const element = new sml_1.SmlElement("Column");
+        const element = new SmlElement("Column");
         if (this.title !== null) {
             element.addAttribute("Title", [this.title]);
         }
@@ -146,19 +141,8 @@ class TblColumnMetaData {
         this.customData = TblMetaDataUtil.getCustomData(element);
     }
 }
-exports.TblColumnMetaData = TblColumnMetaData;
 // ----------------------------------------------------------------------
-class TblMetaData {
-    constructor(document) {
-        this.title = null;
-        this.description = null;
-        this.language = null;
-        this._keywords = null;
-        this._columns = [];
-        this.customData = null;
-        this.customProperties = new TblCustomProperties();
-        this.document = document;
-    }
+export class TblMetaData {
     get keywords() {
         if (this._keywords === null) {
             return null;
@@ -179,6 +163,16 @@ class TblMetaData {
     get columns() {
         return [...this._columns];
     }
+    constructor(document) {
+        this.title = null;
+        this.description = null;
+        this.language = null;
+        this._keywords = null;
+        this._columns = [];
+        this.customData = null;
+        this.customProperties = new TblCustomProperties();
+        this.document = document;
+    }
     get hasAny() {
         return this.title !== null ||
             this.description !== null ||
@@ -197,7 +191,7 @@ class TblMetaData {
         return result;
     }
     toElement() {
-        const element = new sml_1.SmlElement("Meta");
+        const element = new SmlElement("Meta");
         if (this.title !== null) {
             element.addAttribute("Title", [this.title]);
         }
@@ -234,10 +228,9 @@ class TblMetaData {
         this.customData = TblMetaDataUtil.getCustomData(element);
     }
 }
-exports.TblMetaData = TblMetaData;
 // ----------------------------------------------------------------------
-class TblDocument {
-    constructor(columnNames, encoding = reliabletxt_1.ReliableTxtEncoding.Utf8) {
+export class TblDocument {
+    constructor(columnNames, encoding = ReliableTxtEncoding.Utf8) {
         this.rows = [];
         if (columnNames.length < 2) {
             throw new Error("Table must have at least two columns");
@@ -274,7 +267,7 @@ class TblDocument {
         return this.rows.map(x => [...x]);
     }
     toElement(aligned = false, whitespaceBetween = null, rightAligned = null) {
-        const element = new sml_1.SmlElement("Table");
+        const element = new SmlElement("Table");
         if (this.meta.hasAny) {
             const metaElement = this.meta.toElement();
             metaElement.alignAttributes(" ");
@@ -292,23 +285,23 @@ class TblDocument {
     }
     toString(aligned = false, whitespaceBetween = null, rightAligned = null) {
         const rootElement = this.toElement(aligned, whitespaceBetween, rightAligned);
-        const smlDocument = new sml_1.SmlDocument(rootElement);
+        const smlDocument = new SmlDocument(rootElement);
         return smlDocument.toString();
     }
     toMinifiedString() {
         const rootElement = this.toElement();
-        const smlDocument = new sml_1.SmlDocument(rootElement);
+        const smlDocument = new SmlDocument(rootElement);
         return smlDocument.toMinifiedString();
     }
     getBytes() {
         const text = this.toString();
-        return reliabletxt_1.ReliableTxtEncoder.encode(text, this.encoding);
+        return ReliableTxtEncoder.encode(text, this.encoding);
     }
     toBase64String() {
         const text = this.toString();
-        return reliabletxt_1.Base64String.fromText(text, this.encoding);
+        return Base64String.fromText(text, this.encoding);
     }
-    static parseElement(element, encoding = reliabletxt_1.ReliableTxtEncoding.Utf8) {
+    static parseElement(element, encoding = ReliableTxtEncoding.Utf8) {
         if (!element.hasName("Table")) {
             throw new Error("Not a valid table document");
         }
@@ -345,22 +338,21 @@ class TblDocument {
         }
         return document;
     }
-    static parse(content, encoding = reliabletxt_1.ReliableTxtEncoding.Utf8) {
-        const smlDocument = sml_1.SmlDocument.parse(content, false);
+    static parse(content, encoding = ReliableTxtEncoding.Utf8) {
+        const smlDocument = SmlDocument.parse(content, false);
         return TblDocument.parseElement(smlDocument.root, encoding);
     }
     static fromBytes(bytes) {
-        const document = reliabletxt_1.ReliableTxtDecoder.decode(bytes);
+        const document = ReliableTxtDecoder.decode(bytes);
         return this.parse(document.text, document.encoding);
     }
     static fromBase64String(base64Str) {
-        const bytes = reliabletxt_1.Base64String.toBytes(base64Str);
+        const bytes = Base64String.toBytes(base64Str);
         return this.fromBytes(bytes);
     }
 }
-exports.TblDocument = TblDocument;
 // ----------------------------------------------------------------------
-class TblsMetaData {
+export class TblsMetaData {
     constructor() {
         this.title = null;
         this.description = null;
@@ -372,7 +364,7 @@ class TblsMetaData {
             this.customData !== null;
     }
     toElement() {
-        const element = new sml_1.SmlElement("Meta");
+        const element = new SmlElement("Meta");
         if (this.title !== null) {
             element.addAttribute("Title", [this.title]);
         }
@@ -389,17 +381,16 @@ class TblsMetaData {
         this.customData = TblMetaDataUtil.getCustomData(element);
     }
 }
-exports.TblsMetaData = TblsMetaData;
 // ----------------------------------------------------------------------
-class TblsDocument {
-    constructor(tables = null, encoding = reliabletxt_1.ReliableTxtEncoding.Utf8) {
+export class TblsDocument {
+    constructor(tables = null, encoding = ReliableTxtEncoding.Utf8) {
         this.tables = [];
         this.meta = new TblsMetaData();
         this.tables = tables !== null && tables !== void 0 ? tables : [];
         this.encoding = encoding;
     }
     toElement(aligned = false, whitespaceBetween = null) {
-        const element = new sml_1.SmlElement("Tables");
+        const element = new SmlElement("Tables");
         if (this.meta.hasAny) {
             const metaElement = this.meta.toElement();
             metaElement.alignAttributes(" ");
@@ -412,25 +403,25 @@ class TblsDocument {
     }
     toString(aligned = false, whitespaceBetween = null) {
         const rootElement = this.toElement(aligned, whitespaceBetween);
-        const smlDocument = new sml_1.SmlDocument(rootElement);
+        const smlDocument = new SmlDocument(rootElement);
         return smlDocument.toString();
     }
     toMinifiedString() {
         const rootElement = this.toElement();
-        const smlDocument = new sml_1.SmlDocument(rootElement);
+        const smlDocument = new SmlDocument(rootElement);
         return smlDocument.toMinifiedString();
     }
     getBytes() {
         const text = this.toString();
-        return reliabletxt_1.ReliableTxtEncoder.encode(text, this.encoding);
+        return ReliableTxtEncoder.encode(text, this.encoding);
     }
     toBase64String() {
         const text = this.toString();
-        return reliabletxt_1.Base64String.fromText(text, this.encoding);
+        return Base64String.fromText(text, this.encoding);
     }
-    static parse(content, encoding = reliabletxt_1.ReliableTxtEncoding.Utf8) {
+    static parse(content, encoding = ReliableTxtEncoding.Utf8) {
         const document = new TblsDocument(null, encoding);
-        const smlDocument = sml_1.SmlDocument.parse(content, false);
+        const smlDocument = SmlDocument.parse(content, false);
         const rootElement = smlDocument.root;
         if (!rootElement.hasName("Tables")) {
             throw new Error("Not a valid tables document");
@@ -449,13 +440,12 @@ class TblsDocument {
         return document;
     }
     static fromBytes(bytes) {
-        const document = reliabletxt_1.ReliableTxtDecoder.decode(bytes);
+        const document = ReliableTxtDecoder.decode(bytes);
         return this.parse(document.text, document.encoding);
     }
     static fromBase64String(base64Str) {
-        const bytes = reliabletxt_1.Base64String.toBytes(base64Str);
+        const bytes = Base64String.toBytes(base64Str);
         return this.fromBytes(bytes);
     }
 }
-exports.TblsDocument = TblsDocument;
 //# sourceMappingURL=tbl.js.map

@@ -1,6 +1,6 @@
 ﻿import { ReliableTxtEncoding } from "@stenway/reliabletxt"
 import { SmlElement } from "@stenway/sml"
-import { TblCustomProperties, TblDocument, TblMetaData, TblsDocument, TblsMetaData } from "../src"
+import { TblCustomProperties, TblDocument, TblMetaData, TblsDocument, TblsMetaData } from "../src/tbl.js"
 
 test("TblCustomProperties.set", () => {
 	const properties = new TblCustomProperties()
