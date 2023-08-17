@@ -64,10 +64,12 @@ export declare class TblDocument {
     toMinifiedString(): string;
     getBytes(): Uint8Array;
     toBase64String(): string;
+    toBinaryTbl(): Uint8Array;
     static parseElement(element: SmlElement, encoding?: ReliableTxtEncoding): TblDocument;
     static parse(content: string, encoding?: ReliableTxtEncoding): TblDocument;
     static fromBytes(bytes: Uint8Array): TblDocument;
     static fromBase64String(base64Str: string): TblDocument;
+    static fromBinaryTbl(bytes: Uint8Array): TblDocument;
 }
 export declare class TblsMetaData {
     title: string | null;
@@ -87,8 +89,11 @@ export declare class TblsDocument {
     toMinifiedString(): string;
     getBytes(): Uint8Array;
     toBase64String(): string;
+    toBinaryTbls(): Uint8Array;
+    static parseElement(rootElement: SmlElement, encoding?: ReliableTxtEncoding): TblsDocument;
     static parse(content: string, encoding?: ReliableTxtEncoding): TblsDocument;
     static fromBytes(bytes: Uint8Array): TblsDocument;
     static fromBase64String(base64Str: string): TblsDocument;
+    static fromBinaryTbls(bytes: Uint8Array): TblsDocument;
 }
 //# sourceMappingURL=tbl.d.ts.map

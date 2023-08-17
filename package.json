@@ -1,6 +1,6 @@
 {
   "name": "@stenway/tbl",
-  "version": "0.2.0",
+  "version": "0.7.0",
   "type": "module",
   "description": "Serialize and deserialize TBL documents",
   "homepage": "https://www.simpleml.com",
@@ -27,7 +27,15 @@
     "meta data",
     "data format",
     "data",
-    "file format"
+    "file format",
+    "binarytbl",
+    "btbl",
+    "tbl",
+    "binary table format",
+    "tables",
+    "tbls",
+    "binarysml",
+    "varint56"
   ],
   "author": "Stefan John",
   "license": "MIT",
@@ -43,7 +51,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@stenway/reliabletxt": "^0.6.0",
-    "@stenway/sml": "^0.6.0"
+    "@stenway/reliabletxt": "^0.7.0",
+    "@stenway/sml": "^0.7.0"
   }
 }

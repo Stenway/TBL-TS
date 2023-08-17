@@ -301,6 +301,11 @@ export class TblDocument {
         const text = this.toString();
         return Base64String.fromText(text, this.encoding);
     }
+    toBinaryTbl() {
+        const rootElement = this.toElement();
+        const smlDocument = new SmlDocument(rootElement);
+        return smlDocument.toBinarySml();
+    }
     static parseElement(element, encoding = ReliableTxtEncoding.Utf8) {
         if (!element.hasName("Table")) {
             throw new Error("Not a valid table document");
@@ -349,6 +354,10 @@ export class TblDocument {
     static fromBase64String(base64Str) {
         const bytes = Base64String.toBytes(base64Str);
         return this.fromBytes(bytes);
+    }
+    static fromBinaryTbl(bytes) {
+        const smlDocument = SmlDocument.fromBinarySml(bytes);
+        return TblDocument.parseElement(smlDocument.root, ReliableTxtEncoding.Utf8);
     }
 }
 // ----------------------------------------------------------------------
@@ -419,10 +428,13 @@ export class TblsDocument {
         const text = this.toString();
         return Base64String.fromText(text, this.encoding);
     }
-    static parse(content, encoding = ReliableTxtEncoding.Utf8) {
+    toBinaryTbls() {
+        const rootElement = this.toElement();
+        const smlDocument = new SmlDocument(rootElement);
+        return smlDocument.toBinarySml();
+    }
+    static parseElement(rootElement, encoding = ReliableTxtEncoding.Utf8) {
         const document = new TblsDocument(null, encoding);
-        const smlDocument = SmlDocument.parse(content, false);
-        const rootElement = smlDocument.root;
         if (!rootElement.hasName("Tables")) {
             throw new Error("Not a valid tables document");
         }
@@ -439,6 +451,10 @@ export class TblsDocument {
         }
         return document;
     }
+    static parse(content, encoding = ReliableTxtEncoding.Utf8) {
+        const smlDocument = SmlDocument.parse(content, false);
+        return this.parseElement(smlDocument.root, encoding);
+    }
     static fromBytes(bytes) {
         const document = ReliableTxtDecoder.decode(bytes);
         return this.parse(document.text, document.encoding);
@@ -446,6 +462,10 @@ export class TblsDocument {
     static fromBase64String(base64Str) {
         const bytes = Base64String.toBytes(base64Str);
         return this.fromBytes(bytes);
+    }
+    static fromBinaryTbls(bytes) {
+        const smlDocument = SmlDocument.fromBinarySml(bytes);
+        return TblsDocument.parseElement(smlDocument.root, ReliableTxtEncoding.Utf8);
     }
 }
 //# sourceMappingURL=tbl.js.map

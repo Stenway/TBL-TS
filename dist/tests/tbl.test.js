@@ -198,6 +198,12 @@ test("TblDocument.parseElement", () => {
     const document = TblDocument.parseElement(element);
     expect(document.toString()).toEqual(element.toString());
 });
+test("TblDocument.toBinaryTbl + fromBinaryTbl", () => {
+    const document = TblDocument.parse(`Table\n\tColumn1 Column2\n\tV11 V12\n\t"Long Value" -\nEnd`);
+    const bytes = document.toBinaryTbl();
+    const decodedDocument = TblDocument.fromBinaryTbl(bytes);
+    expect(document.toString()).toEqual(decodedDocument.toString());
+});
 // ----------------------------------------------------------------------
 describe("TblsMetaData.parse + toSmlElement", () => {
     test.each([
@@ -263,5 +269,16 @@ test("TblsDocument.toBase64String + fromBase64String", () => {
     const base64Str = document.toBase64String();
     const document2 = TblsDocument.fromBase64String(base64Str);
     expect(document.toString()).toEqual(document2.toString());
+});
+test("TblsDocument.parseElement", () => {
+    const element = SmlElement.parse(`Tables\n\tTable\n\t\tColumn1 Column2\n\tEnd\nEnd`);
+    const document = TblsDocument.parseElement(element);
+    expect(document.toString()).toEqual(element.toString());
+});
+test("TblsDocument.toBinaryTbls + fromBinaryTbls", () => {
+    const document = TblsDocument.parse(`Tables\n\tTable\n\t\tColumn1 Column2\n\tEnd\nEnd`);
+    const bytes = document.toBinaryTbls();
+    const decodedDocument = TblsDocument.fromBinaryTbls(bytes);
+    expect(document.toString()).toEqual(decodedDocument.toString());
 });
 //# sourceMappingURL=tbl.test.js.map

@@ -308,6 +308,12 @@ export class TblDocument {
 		return Base64String.fromText(text, this.encoding)
 	}
 
+	toBinaryTbl(): Uint8Array {
+		const rootElement: SmlElement = this.toElement()
+		const smlDocument: SmlDocument = new SmlDocument(rootElement)
+		return smlDocument.toBinarySml()
+	}
+
 	static parseElement(element: SmlElement, encoding: ReliableTxtEncoding = ReliableTxtEncoding.Utf8): TblDocument {
 		if (!element.hasName("Table")) { throw new Error("Not a valid table document") }
 		
@@ -349,6 +355,11 @@ export class TblDocument {
 	static fromBase64String(base64Str: string): TblDocument {
 		const bytes = Base64String.toBytes(base64Str)
 		return this.fromBytes(bytes)
+	}
+
+	static fromBinaryTbl(bytes: Uint8Array): TblDocument {
+		const smlDocument = SmlDocument.fromBinarySml(bytes)
+		return TblDocument.parseElement(smlDocument.root, ReliableTxtEncoding.Utf8)
 	}
 }
 
@@ -428,10 +439,14 @@ export class TblsDocument {
 		return Base64String.fromText(text, this.encoding)
 	}
 
-	static parse(content: string, encoding: ReliableTxtEncoding = ReliableTxtEncoding.Utf8): TblsDocument {
+	toBinaryTbls(): Uint8Array {
+		const rootElement: SmlElement = this.toElement()
+		const smlDocument: SmlDocument = new SmlDocument(rootElement)
+		return smlDocument.toBinarySml()
+	}
+
+	static parseElement(rootElement: SmlElement, encoding: ReliableTxtEncoding = ReliableTxtEncoding.Utf8): TblsDocument {
 		const document: TblsDocument = new TblsDocument(null, encoding)
-		const smlDocument: SmlDocument = SmlDocument.parse(content, false)
-		const rootElement: SmlElement = smlDocument.root
 		if (!rootElement.hasName("Tables")) { throw new Error("Not a valid tables document") }
 
 		rootElement.assureElementCountMinMax(0, 1, "Meta")
@@ -446,6 +461,11 @@ export class TblsDocument {
 		}
 		return document
 	}
+	
+	static parse(content: string, encoding: ReliableTxtEncoding = ReliableTxtEncoding.Utf8): TblsDocument {
+		const smlDocument: SmlDocument = SmlDocument.parse(content, false)
+		return this.parseElement(smlDocument.root, encoding)
+	}
 
 	static fromBytes(bytes: Uint8Array): TblsDocument {
 		const document = ReliableTxtDecoder.decode(bytes)
@@ -455,5 +475,10 @@ export class TblsDocument {
 	static fromBase64String(base64Str: string): TblsDocument {
 		const bytes = Base64String.toBytes(base64Str)
 		return this.fromBytes(bytes)
+	}
+
+	static fromBinaryTbls(bytes: Uint8Array): TblsDocument {
+		const smlDocument = SmlDocument.fromBinarySml(bytes)
+		return TblsDocument.parseElement(smlDocument.root, ReliableTxtEncoding.Utf8)
 	}
 }
