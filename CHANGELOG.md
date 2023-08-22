@@ -1,5 +1,9 @@
 ﻿# Changelog
 
+## 0.8.0
+- renamed TblDocument.getBytes and TblsDocument.getBytes to toBytes
+- BinarySML switch
+
 ## 0.7.0
 - added support for BinaryTBL and BinaryTBLS (based on BinarySML)
 

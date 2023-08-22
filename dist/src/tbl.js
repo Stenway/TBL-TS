@@ -293,7 +293,7 @@ export class TblDocument {
         const smlDocument = new SmlDocument(rootElement);
         return smlDocument.toMinifiedString();
     }
-    getBytes() {
+    toBytes() {
         const text = this.toString();
         return ReliableTxtEncoder.encode(text, this.encoding);
     }
@@ -420,7 +420,7 @@ export class TblsDocument {
         const smlDocument = new SmlDocument(rootElement);
         return smlDocument.toMinifiedString();
     }
-    getBytes() {
+    toBytes() {
         const text = this.toString();
         return ReliableTxtEncoder.encode(text, this.encoding);
     }

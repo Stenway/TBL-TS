@@ -1,4 +1,4 @@
 /* eslint-disable no-console */
-console.log(document.toString());
+console.log("Dev");
 export {};
 //# sourceMappingURL=dev.js.map

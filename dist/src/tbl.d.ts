@@ -62,7 +62,7 @@ export declare class TblDocument {
     toElement(aligned?: boolean, whitespaceBetween?: string | null, rightAligned?: boolean[] | null): SmlElement;
     toString(aligned?: boolean, whitespaceBetween?: string | null, rightAligned?: boolean[] | null): string;
     toMinifiedString(): string;
-    getBytes(): Uint8Array;
+    toBytes(): Uint8Array;
     toBase64String(): string;
     toBinaryTbl(): Uint8Array;
     static parseElement(element: SmlElement, encoding?: ReliableTxtEncoding): TblDocument;
@@ -87,7 +87,7 @@ export declare class TblsDocument {
     toElement(aligned?: boolean, whitespaceBetween?: string | null): SmlElement;
     toString(aligned?: boolean, whitespaceBetween?: string | null): string;
     toMinifiedString(): string;
-    getBytes(): Uint8Array;
+    toBytes(): Uint8Array;
     toBase64String(): string;
     toBinaryTbls(): Uint8Array;
     static parseElement(rootElement: SmlElement, encoding?: ReliableTxtEncoding): TblsDocument;

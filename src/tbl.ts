@@ -298,7 +298,7 @@ export class TblDocument {
 		return smlDocument.toMinifiedString()
 	}
 
-	getBytes(): Uint8Array {
+	toBytes(): Uint8Array {
 		const text = this.toString()
 		return ReliableTxtEncoder.encode(text, this.encoding)
 	}
@@ -429,7 +429,7 @@ export class TblsDocument {
 		return smlDocument.toMinifiedString()
 	}
 
-	getBytes(): Uint8Array {
+	toBytes(): Uint8Array {
 		const text = this.toString()
 		return ReliableTxtEncoder.encode(text, this.encoding)
 	}

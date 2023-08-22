@@ -231,9 +231,9 @@ describe("TblDocument.parse", () => {
 	)
 })
 
-test("TblDocument.getBytes + fromBytes", () => {
+test("TblDocument.toBytes + fromBytes", () => {
 	const document = TblDocument.parse(`Table\n\tColumn1 Column2\n\tV11 V12\n\t"Long Value" -\nEnd`)
-	const bytes = document.getBytes()
+	const bytes = document.toBytes()
 	const document2 = TblDocument.fromBytes(bytes)
 	expect(document.toString()).toEqual(document2.toString())
 })
@@ -334,9 +334,9 @@ test("TblsDocument.toAlignedString + toMinifiedString", () => {
 	expect(document.toMinifiedString()).toEqual(`Tables\nMeta\nDescription Text\n-\nTable\nColumn1 Column2\nV11 V12\n"Long Value" -\n-\n-`)
 })
 
-test("TblsDocument.getBytes + fromBytes", () => {
+test("TblsDocument.toBytes + fromBytes", () => {
 	const document = TblsDocument.parse(`Tables\n\tMeta\n\t\tDescription Text\n\tEnd\n\tTable\n\t\tColumn1 Column2\n\t\tV11 V12\n\t\t"Long Value" -\n\tEnd\nEnd`)
-	const bytes = document.getBytes()
+	const bytes = document.toBytes()
 	const document2 = TblsDocument.fromBytes(bytes)
 	expect(document.toString()).toEqual(document2.toString())
 })
