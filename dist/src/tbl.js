@@ -299,7 +299,7 @@ export class TblDocument {
     }
     toBase64String() {
         const text = this.toString();
-        return Base64String.fromText(text, this.encoding);
+        return Base64String.encodeText(text, this.encoding);
     }
     toBinaryTbl() {
         const rootElement = this.toElement();
@@ -352,7 +352,7 @@ export class TblDocument {
         return this.parse(document.text, document.encoding);
     }
     static fromBase64String(base64Str) {
-        const bytes = Base64String.toBytes(base64Str);
+        const bytes = Base64String.decodeAsBytes(base64Str);
         return this.fromBytes(bytes);
     }
     static fromBinaryTbl(bytes) {
@@ -426,7 +426,7 @@ export class TblsDocument {
     }
     toBase64String() {
         const text = this.toString();
-        return Base64String.fromText(text, this.encoding);
+        return Base64String.encodeText(text, this.encoding);
     }
     toBinaryTbls() {
         const rootElement = this.toElement();
@@ -460,7 +460,7 @@ export class TblsDocument {
         return this.parse(document.text, document.encoding);
     }
     static fromBase64String(base64Str) {
-        const bytes = Base64String.toBytes(base64Str);
+        const bytes = Base64String.decodeAsBytes(base64Str);
         return this.fromBytes(bytes);
     }
     static fromBinaryTbls(bytes) {

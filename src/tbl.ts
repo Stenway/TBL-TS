@@ -305,7 +305,7 @@ export class TblDocument {
 
 	toBase64String(): string {
 		const text = this.toString()
-		return Base64String.fromText(text, this.encoding)
+		return Base64String.encodeText(text, this.encoding)
 	}
 
 	toBinaryTbl(): Uint8Array {
@@ -353,7 +353,7 @@ export class TblDocument {
 	}
 
 	static fromBase64String(base64Str: string): TblDocument {
-		const bytes = Base64String.toBytes(base64Str)
+		const bytes = Base64String.decodeAsBytes(base64Str)
 		return this.fromBytes(bytes)
 	}
 
@@ -436,7 +436,7 @@ export class TblsDocument {
 
 	toBase64String(): string {
 		const text = this.toString()
-		return Base64String.fromText(text, this.encoding)
+		return Base64String.encodeText(text, this.encoding)
 	}
 
 	toBinaryTbls(): Uint8Array {
@@ -473,7 +473,7 @@ export class TblsDocument {
 	}
 
 	static fromBase64String(base64Str: string): TblsDocument {
-		const bytes = Base64String.toBytes(base64Str)
+		const bytes = Base64String.decodeAsBytes(base64Str)
 		return this.fromBytes(bytes)
 	}
 
